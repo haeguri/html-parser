@@ -7,14 +7,33 @@
     <script>
         const parser = input => {
             let cursor = 0;
+            let memo = '';
 
             while(cursor < input.length) {
                 const char = input[cursor++];
-
-                // cursor로 읽어들인 char 뭔가를 한다.
+                if(char === '<') {
+                    if(memo.length === 0) {
+                        // 메모에 든 것이 없다. '<'는 시작 태그의 일부이다.
+                        const name = input.substring(cursor, cursor = input.indexOf('>', cursor+1));
+                        console.log('start', name);
+                    
+                    } else {
+                        // 메모에 든 것이 있다. 
+                        // 이것은 '<'가 태그의 종료를 의미하는 것일 수도.
+                        // '<'가 또 다른 태그의 시작이고, memo에 든 것은 텍스트 노드이다. 라는 것을 의미할 수도 있다.
+                        const name = input.substring(cursor, cursor = input.indexOf('>', cursor));
+                        console.log('end', cursor, name);
+                    }
+                } else {
+                    // '<'가 아니니까, 그냥 메모만 해놓자.
+                    memo += char;
+                }
             }
         }
-        
+
+        parser('<div></div>');
+        parser('<div><a></a></div>');
+        parser('<div>test<p>gggg</p></div>');
     </script>
     <title>Document</title>
 </head>
