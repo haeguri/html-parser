@@ -35,50 +35,25 @@
             while(cursor < input.length) {
                 const char = input[cursor++];
                 if(char === '<') {
-                    // 메모에 든 것이 없다. 
-                    if(memo.length === 0) {
-                        const name = input.substring(cursor, cursor = input.indexOf('>', cursor + 1));
+                    const name = input.substring(cursor, cursor = input.indexOf('>', cursor + 1));
 
-                        if(name.indexOf('/') >= 0) {
-                            // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
-                            if(input[cursor-1] === '/') {
-                                elementNode(name.slice(0, -1), currentDepth);
-                            } 
-                            // 그냥 종료되는 태그다.
-                            else {
-                                currentDepth = currentDepth.parent;    
-                            }
-
-                        } else {
-                            currentDepth = elementNode(name, currentDepth);
-                        }
-
-                        cursor++; // '>'는 건너뛴다.
-                    
-                    } 
-                    // 메모에 든 것이 있다.
-                    else {
-                        const name = input.substring(cursor, cursor = input.indexOf('>', cursor + 1));
-
-                        // 종료 태그다.
-                        if(name.indexOf('/') >= 0) {
-                            // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
-                            if(input[cursor-1] === '/') {
-                                elementNode(name.slice(0, -1), currentDepth);
-                            }
-
-                            textNode(memo, currentDepth);
-                            currentDepth = currentDepth.parent;
-                        } 
-                        // 새로운 노드가 시작되었다.
-                        else {
-                            textNode(memo, currentDepth);
-                            currentDepth = elementNode(name, currentDepth);
-                        }
-
-                        cursor++; // '>'는 건너뛴다.
+                    if(memo.length > 0) {
+                        textNode(memo, currentDepth);
                         memo = '';
                     }
+
+                    if(name.indexOf('/') >= 0) {
+                        if(input[cursor-1] === '/') {
+                            elementNode(name.slice(0, -1), currentDepth);
+                        } 
+                        else { 
+                            currentDepth = currentDepth.parent;
+                        }
+                    } else {
+                        currentDepth = elementNode(name, currentDepth);
+                    }
+
+                    cursor++; // '>'는 건너뛴다.
                 } else {
                     memo += char;
                 }
@@ -95,6 +70,7 @@
             console.log('\n\n');
         }
 
+        // print(parser, 'aa<img/><p><img/><div><p>test</p></div></p>');
         print(parser, '<img/><p><img/><div><p>test</p></div></p><div><a>aa</a></div><img/><img/><img/>')
     </script>
     <title>Document</title>
