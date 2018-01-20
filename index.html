@@ -5,55 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <script>
+        const elementNode = (name, parentNode) => {
+            const node = {
+                type: name,
+                parent: parentNode,
+                children: []
+            };
+
+            parentNode.children.push(node);
+
+            return node;
+        }
+
+        const textNode = (text, parentNode) => {
+            parentNode.children.push({
+                type: 'text',
+                text: text,
+                children: null,
+                parent: parentNode
+            });
+        }
+
         const parser = input => {
-            let cursor = 0;
-            let memo = '';
+            let root = {
+                    type: 'root',
+                    children: []
+                },
+                currentDepth = root,
+                cursor = 0,
+                memo = '';
 
             while(cursor < input.length) {
                 const char = input[cursor++];
                 if(char === '<') {
+                    // 메모에 든 것이 없다. 
                     if(memo.length === 0) {
-                        // 메모에 든 것이 없다. '<'는 시작 태그의 일부이다.
                         const name = input.substring(cursor, cursor = input.indexOf('>', cursor + 1));
-                        console.log('start', name);
+
+                        if(name.indexOf('/') >= 0) {
+                            // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
+                            if(input[cursor] === '/') {
+                                elementNode(name.slice(0, -1), currentDepth);
+                            }
+                        } else {
+                            currentDepth = elementNode(name, currentDepth);
+                        }
 
                         cursor++; // '>'는 건너뛴다.
                     
-                    } else {
+                    } 
+                    // 메모에 든 것이 있다.
+                    else {
                         const name = input.substring(cursor, cursor = input.indexOf('>', cursor + 1));
 
-                        cursor++; // '>'는 건너뛴다.
-
+                        // 종료 태그다.
                         if(name.indexOf('/') >= 0) {
-                            // '<'는 태그가 종료되는 지점이고, memo에 든 것은 텍스트 노드이다.
-                            console.log('end', name.substring(1));
-                        } else {
-                            // '<'는 태그가 시작하는 지점이고, memo에 든 것은 텍스트 노드이다.
-                            console.log('start', name);
+                            if(input[cursor-1] === '/') {
+                                // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
+                                elementNode(name.slice(0, -1), currentDepth);
+                            }
+
+                            textNode(memo, currentDepth);
+                            currentDepth = currentDepth.parent;
+                        } 
+                        // 새로운 노드가 시작되었다.
+                        else {
+                            textNode(memo, currentDepth);
+                            currentDepth = elementNode(name, currentDepth);
                         }
 
-                        console.log('memo node is', memo);
+                        cursor++; // '>'는 건너뛴다.
                         memo = '';
                     }
                 } else {
-                    // '<'가 아니니까, 그냥 메모만 해놓자.
                     memo += char;
                 }
             }
+
+            console.group('DOM is ', root);
+            
         }
 
         let caseNum = 0;
         const print = (func, input) => {
             console.log('['+(++caseNum)+' case]');
+            console.log(input);
             func(input);
             console.log('\n\n');
         }
 
-        print(parser, '<div></div>');
-        print(parser, '<div>aaa</div>');
-        print(parser, '<div>a<a>bb</a>cccc</div>');
-        print(parser, '<div><a>test</a></div>');
-        print(parser, '<div>test<p>gggg</p></div>');
+        const test = `
+        <div>
+            a
+            <a>aa</a>
+        </div>
+        `
+
+        // print(parser, '<div></div>');
+        // print(parser, '<div>aaa</div>');
+        print(parser, 'aaa<img/>')
+        // print(parser, '<div>a<a>bb</a>cccc</div>');
+        // print(parser, '<div><a>test</a></div>');
+        // print(parser, '<div>test<p>gggg</p></div>');
     </script>
     <title>Document</title>
 </head>
