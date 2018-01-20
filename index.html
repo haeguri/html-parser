@@ -27,10 +27,7 @@
         }
 
         const parser = input => {
-            let root = {
-                    type: 'root',
-                    children: []
-                },
+            let root = { type: 'root', children: [] },
                 currentDepth = root,
                 cursor = 0,
                 memo = '';
@@ -44,9 +41,14 @@
 
                         if(name.indexOf('/') >= 0) {
                             // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
-                            if(input[cursor] === '/') {
+                            if(input[cursor-1] === '/') {
                                 elementNode(name.slice(0, -1), currentDepth);
+                            } 
+                            // 그냥 종료되는 태그다.
+                            else {
+                                currentDepth = currentDepth.parent;    
                             }
+
                         } else {
                             currentDepth = elementNode(name, currentDepth);
                         }
@@ -60,8 +62,8 @@
 
                         // 종료 태그다.
                         if(name.indexOf('/') >= 0) {
+                            // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
                             if(input[cursor-1] === '/') {
-                                // '>'바로 앞에 '/'가 있으니까, 단일 태그다..
                                 elementNode(name.slice(0, -1), currentDepth);
                             }
 
@@ -82,31 +84,18 @@
                 }
             }
 
-            console.group('DOM is ', root);
-            
+            return root;
         }
 
         let caseNum = 0;
         const print = (func, input) => {
             console.log('['+(++caseNum)+' case]');
             console.log(input);
-            func(input);
+            console.log(func(input));
             console.log('\n\n');
         }
 
-        const test = `
-        <div>
-            a
-            <a>aa</a>
-        </div>
-        `
-
-        // print(parser, '<div></div>');
-        // print(parser, '<div>aaa</div>');
-        print(parser, 'aaa<img/>')
-        // print(parser, '<div>a<a>bb</a>cccc</div>');
-        // print(parser, '<div><a>test</a></div>');
-        // print(parser, '<div>test<p>gggg</p></div>');
+        print(parser, '<img/><p><img/><div><p>test</p></div></p><div><a>aa</a></div><img/><img/><img/>')
     </script>
     <title>Document</title>
 </head>
